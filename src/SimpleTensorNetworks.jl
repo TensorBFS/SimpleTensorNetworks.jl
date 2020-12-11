@@ -1,5 +1,5 @@
 module SimpleTensorNetworks
 
-# Write your package code here.
+include("tensorcontract.jl")
 
 end

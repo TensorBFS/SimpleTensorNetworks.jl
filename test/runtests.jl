@@ -1,6 +1,6 @@
 using SimpleTensorNetworks
 using Test
 
-@testset "SimpleTensorNetworks.jl" begin
-    # Write your tests here.
+@testset "contract" begin
+    include("tensorcontract.jl")
 end
