@@ -103,8 +103,12 @@ struct ContractionTree
         new(left, right)
     end
 end
+function Base.getindex(ct::ContractionTree, i::Int)
+     Base.@boundscheck i==1 || i==2
+    i==1 ? ct.left : ct.right
+end
 
-contract_tree(tn::TensorNetwork, ctree) = ctree isa ContractionTree ? contract_tree(tn, ctree.left) * contract_tree(tn, ctree.right) : tn.tensors[ctree]
+contract_tree(tn::TensorNetwork, ctree::ContractionTree) = ctree isa ContractionTree ? contract_tree(tn, ctree[1]) * contract_tree(tn, ctree[2]) : tn.tensors[ctree]
 contract(tn::TensorNetwork, ctree::ContractionTree) = contract_tree(copy(tn), ctree)
 
 function contract_label!(tn::TensorNetwork{T, LT}, label::LT) where {T, LT}
