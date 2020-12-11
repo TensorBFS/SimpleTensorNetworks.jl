@@ -118,7 +118,7 @@ function contract_tree(tn::TensorNetwork{T}, ctree; normalizer) where T
         t = tn.tensors[ctree]
         if normalizer !== nothing
             normt = normalizer(t)
-            return normt, LabeledTensor(t.array ./ normt, t.labels)
+            return normt, LabeledTensor(rmul!(copy(t.array), T(1/normt)), t.labels)
         else
             return one(T), t
         end
@@ -129,8 +129,8 @@ function contract_tree(tn::TensorNetwork{T}, ctree; normalizer) where T
         t = t1 * t2
         if normalizer !== nothing
             normt_ = normalizer(t)
-            normt = normt*normt_
-            t.array ./= normt_
+            normt = normt * normt_
+            rmul!(t.array, T(1/normt_))
         end
         return normt, t
     end
