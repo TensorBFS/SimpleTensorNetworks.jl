@@ -58,7 +58,7 @@ end
 
 function _conditioned_permutedims(A::AbstractArray{T,N}, perm) where {T,N}
     if any(i-> (@inbounds perm[i]!=i), 1:N)
-        return permutedims(A, perm)
+        return permutedims(A, (perm...,))
     else
         return A
     end
@@ -70,8 +70,10 @@ struct LabeledTensor{T,N,AT<:AbstractArray{T,N}, LT, MT}
     labels::Vector{LT}
     meta::MT
 end
+Base.ndims(t::LabeledTensor) = ndims(t.array)
 
-function LabeledTensor(tensor, labels)
+function LabeledTensor(tensor::AbstractArray, labels::AbstractVector)
+    @assert ndims(tensor) == length(labels) "dimension of tensor $(ndims(tensor)) != number of labels $(length(labels))"
     LabeledTensor(tensor, labels, nothing)
 end
 
@@ -83,6 +85,7 @@ end
 function Base.isapprox(a::LabeledTensor, b::LabeledTensor; kwargs...)
     isapprox(a.array, b.array; kwargs...) && a.labels == b.labels
 end
+Base.size(t::LabeledTensor) = Base.size(t.array)
 
 struct TensorNetwork{T,LT}
     tensors::Vector{LabeledTensor{T,N,AT,LT} where {N, AT}}
@@ -95,6 +98,7 @@ function TensorNetwork(tensors)
 end
 
 Base.copy(tn::TensorNetwork) = TensorNetwork(copy(tn.tensors))
+Base.length(tn::TensorNetwork) = length(tn.tensors)
 
 struct ContractionTree
     left
@@ -108,8 +112,8 @@ function Base.getindex(ct::ContractionTree, i::Int)
     i==1 ? ct.left : ct.right
 end
 
-contract_tree(tn::TensorNetwork, ctree::ContractionTree) = ctree isa ContractionTree ? contract_tree(tn, ctree[1]) * contract_tree(tn, ctree[2]) : tn.tensors[ctree]
-contract(tn::TensorNetwork, ctree::ContractionTree) = contract_tree(copy(tn), ctree)
+contract_tree(tn::TensorNetwork, ctree) = !(ctree isa Integer) ? contract_tree(tn, ctree[1]) * contract_tree(tn, ctree[2]) : tn.tensors[ctree]
+contract(tn::TensorNetwork, ctree::ContractionTree) = contract_tree(tn, ctree)
 
 function contract_label!(tn::TensorNetwork{T, LT}, label::LT) where {T, LT}
     ts = findall(x->label ∈ x.labels, tn.tensors)
