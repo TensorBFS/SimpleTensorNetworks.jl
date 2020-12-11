@@ -1,4 +1,4 @@
-export tensorcontract, LabeledTensor, TensorNetwork, contract_label!, TensorMeta, contract, ContractionTree
+export tensorcontract, LabeledTensor, TensorNetwork, contract_label!, PlotMeta, contract, ContractionTree
 export contract_tree
 
 function _align_eltypes(xs::AbstractArray...)
@@ -65,36 +65,33 @@ function _conditioned_permutedims(A::AbstractArray{T,N}, perm) where {T,N}
 end
 
 # abstractions
-struct LabeledTensor{T,N,AT<:AbstractArray{T,N}, LT}
+struct LabeledTensor{T,N,AT<:AbstractArray{T,N}, LT, MT}
     array::AT
     labels::Vector{LT}
+    meta::MT
+end
+
+function LabeledTensor(tensor, labels)
+    LabeledTensor(tensor, labels, nothing)
 end
 
 function Base.:(*)(A::LabeledTensor, B::LabeledTensor)
     labels_AB = setdiff(A.labels, B.labels) ∪ setdiff(B.labels, A.labels)
-    LabeledTensor(tensorcontract(A.labels, A.array, B.labels, B.array, labels_AB), labels_AB)
+    LabeledTensor(tensorcontract(A.labels, A.array, B.labels, B.array, labels_AB), labels_AB, merge_meta(A.meta, B.meta))
 end
 
 function Base.isapprox(a::LabeledTensor, b::LabeledTensor; kwargs...)
     isapprox(a.array, b.array; kwargs...) && a.labels == b.labels
 end
 
-struct TensorMeta
-    loc::Tuple{Float64, Float64}
-    name::String
-end
-rand_meta() = TensorMeta((rand(), rand()), "")
-merge_meta(m1::TensorMeta, m2::TensorMeta) = TensorMeta((m1.loc .+ m2.loc) ./ 2, m1.name*m2.name)
-
 struct TensorNetwork{T,LT}
     tensors::Vector{LabeledTensor{T,N,AT,LT} where {N, AT}}
-    metas::Vector{TensorMeta}
 end
 
-function TensorNetwork(tensors; metas=[rand_meta() for i=1:length(tensors)])
+function TensorNetwork(tensors)
     T = promote_type([eltype(x.array) for x in tensors]...)
     LT = promote_type([eltype(x.labels) for x in tensors]...)
-    TensorNetwork((LabeledTensor{T,N,AT,LT} where {N,AT})[tensors...], metas)
+    TensorNetwork((LabeledTensor{T,N,AT,LT} where {N,AT})[tensors...])
 end
 
 Base.copy(tn::TensorNetwork) = TensorNetwork(copy(tn.tensors))
@@ -115,11 +112,8 @@ function contract_label!(tn::TensorNetwork{T, LT}, label::LT) where {T, LT}
     @assert length(ts) == 2 "number of tensors with the same label $label is not 2, find $ts"
     t1, t2 = tn.tensors[ts[1]], tn.tensors[ts[2]]
     tout = t1 * t2
-    meta_out = merge_meta(tn.metas[ts[1]], tn.metas[ts[2]])
     deleteat!(tn.tensors, ts)
-    deleteat!(tn.metas, ts)
     push!(tn.tensors, tout)
-    push!(tn.metas, meta_out)
     return tout, t1.labels ∩ t2.labels
 end
 
@@ -147,7 +141,7 @@ end
 end
 
 function Base.show(io::IO, tn::TensorNetwork)
-    print(io, "$(typeof(tn).name):\n  $(join(["$(m.name) => $t" for (m, t) in zip(tn.metas, tn.tensors)], "\n  "))")
+    print(io, "$(typeof(tn).name):\n  $(join(["$(t.meta === nothing ? i : dispmeta(t.meta)) => $t" for (i, t) in enumerate(tn.tensors)], "\n  "))")
 end
 
 function Base.show(io::IO, ::MIME"plain/text", tn::TensorNetwork)
@@ -162,3 +156,10 @@ function Base.show(io::IO, ::MIME"plain/text", lt::LabeledTensor)
     Base.show(io, lt)
 end
 
+struct PlotMeta
+    loc::Tuple{Float64, Float64}
+    name::String
+end
+merge_meta(m1::PlotMeta, m2::PlotMeta) = PlotMeta((m1.loc .+ m2.loc) ./ 2, m1.name*m2.name)
+merge_meta(m1::Nothing, m2::Nothing) = nothing
+dispmeta(m::PlotMeta) = m.name
