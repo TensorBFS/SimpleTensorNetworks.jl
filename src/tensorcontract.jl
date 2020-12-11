@@ -71,6 +71,7 @@ struct LabeledTensor{T,N,AT<:AbstractArray{T,N}, LT, MT}
     meta::MT
 end
 Base.ndims(t::LabeledTensor) = ndims(t.array)
+LinearAlgebra.norm(t::LabeledTensor, p::Real=2) = norm(t.array)
 
 function LabeledTensor(tensor::AbstractArray, labels::AbstractVector)
     @assert ndims(tensor) == length(labels) "dimension of tensor $(ndims(tensor)) != number of labels $(length(labels))"
@@ -112,8 +113,34 @@ function Base.getindex(ct::ContractionTree, i::Int)
     i==1 ? ct.left : ct.right
 end
 
-contract_tree(tn::TensorNetwork, ctree) = !(ctree isa Integer) ? contract_tree(tn, ctree[1]) * contract_tree(tn, ctree[2]) : tn.tensors[ctree]
-contract(tn::TensorNetwork, ctree::ContractionTree) = contract_tree(tn, ctree)
+function contract_tree(tn::TensorNetwork{T}, ctree; normalizer) where T
+    if ctree isa Integer
+        t = tn.tensors[ctree]
+        if normalizer !== nothing
+            normt = normalizer(t)
+            return normt, LabeledTensor(t.array ./ normt, t.labels)
+        else
+            return one(T), t
+        end
+    else
+        normt1, t1 = contract_tree(tn, ctree[1]; normalizer=normalizer)
+        normt2, t2 = contract_tree(tn, ctree[2]; normalizer=normalizer)
+        normt = normt1 * normt2
+        t = t1 * t2
+        if normalizer !== nothing
+            normt_ = normalizer(t)
+            normt = normt*normt_
+            t.array ./= normt_
+        end
+        return normt, t
+    end
+end
+
+function contract(tn::TensorNetwork, ctree; normalizer=norm)
+    normt, t = contract_tree(tn, ctree; normalizer=normalizer)
+    t.array .*= normt
+    return t
+end
 
 function contract_label!(tn::TensorNetwork{T, LT}, label::LT) where {T, LT}
     ts = findall(x->label ∈ x.labels, tn.tensors)

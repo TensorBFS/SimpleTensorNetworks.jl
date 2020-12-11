@@ -1,6 +1,7 @@
 module SimpleTensorNetworks
 
 using Requires
+using LinearAlgebra
 
 include("tensorcontract.jl")
 
