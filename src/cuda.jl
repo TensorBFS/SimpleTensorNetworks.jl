@@ -1,5 +1,5 @@
 using .CUDA
-using .CUDA: CuArray, @linearidx, GPUArrays
+using .CUDA: CuArray, @linearidx, GPUArrays, CUBLAS
 using LinearAlgebra
 
 export togpu
@@ -27,4 +27,8 @@ function LinearAlgebra.permutedims!(dest::GPUArrays.AbstractGPUArray, src::GPUAr
         return
     end
     return reshape(dest, size(dest))
+end
+
+function LinearAlgebra.rmul!(a::StridedCuArray{<:CUBLAS.CublasFloat}, k::Number)
+    vec(a) .*= k
 end
