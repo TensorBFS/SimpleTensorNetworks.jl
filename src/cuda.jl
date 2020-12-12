@@ -31,4 +31,5 @@ end
 
 function LinearAlgebra.rmul!(a::StridedCuArray{<:CUBLAS.CublasFloat}, k::Number)
     vec(a) .*= k
+    return a
 end
