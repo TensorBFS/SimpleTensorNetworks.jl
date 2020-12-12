@@ -136,7 +136,7 @@ function contract_tree(tn::TensorNetwork{T}, ctree; normalizer) where T
     end
 end
 
-function contract(tn::TensorNetwork, ctree; normalizer=norm)
+function contract(tn::TensorNetwork, ctree; normalizer=nothing)
     normt, t = contract_tree(tn, ctree; normalizer=normalizer)
     t.array .*= normt
     return t
