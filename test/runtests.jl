@@ -5,6 +5,10 @@ using Test
     include("tensorcontract.jl")
 end
 
+@testset "viz" begin
+    include("viz.jl")
+end
+
 @testset "cuda" begin
     if Base.find_package("CUDA") !== nothing
         include("cuda.jl")

@@ -198,3 +198,19 @@ end
 merge_meta(m1::PlotMeta, m2::PlotMeta) = PlotMeta((m1.loc .+ m2.loc) ./ 2, m1.name*m2.name)
 merge_meta(m1::Nothing, m2::Nothing) = nothing
 dispmeta(m::PlotMeta) = m.name
+
+function adjacency_matrix(tn::TensorNetwork)
+    indx = Int[]
+    indy = Int[]
+    data = Int[]
+    for i=1:length(tn)
+        for j=1:length(tn)
+            if i!=j && any(l->l ∈ tn.tensors[i].labels, tn.tensors[j].labels)
+                push!(indx, i)
+                push!(indy, j)
+                push!(data, 1)
+            end
+        end
+    end
+    return sparse(indx, indy, data)
+end
