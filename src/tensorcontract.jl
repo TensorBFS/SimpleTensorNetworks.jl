@@ -1,4 +1,4 @@
-export tensorcontract, LabeledTensor, TensorNetwork, contract_label!, PlotMeta, contract, ContractionTree
+export tensorcontract, TensorNetwork, contract_label!, PlotMeta, contract, ContractionTree
 export contract_tree
 
 function _align_eltypes(xs::AbstractArray...)
@@ -64,38 +64,13 @@ function _conditioned_permutedims(A::AbstractArray{T,N}, perm) where {T,N}
     end
 end
 
-# abstractions
-struct LabeledTensor{T,N,AT<:AbstractArray{T,N}, LT, MT}
-    array::AT
-    labels::Vector{LT}
-    meta::MT
-end
-Base.ndims(t::LabeledTensor) = ndims(t.array)
-LinearAlgebra.norm(t::LabeledTensor, p::Real=2) = norm(t.array)
-
-function LabeledTensor(tensor::AbstractArray, labels::AbstractVector)
-    @assert ndims(tensor) == length(labels) "dimension of tensor $(ndims(tensor)) != number of labels $(length(labels))"
-    LabeledTensor(tensor, labels, nothing)
-end
-
-function Base.:(*)(A::LabeledTensor, B::LabeledTensor)
-    labels_AB = setdiff(A.labels, B.labels) ∪ setdiff(B.labels, A.labels)
-    LabeledTensor(tensorcontract(A.labels, A.array, B.labels, B.array, labels_AB), labels_AB, merge_meta(A.meta, B.meta))
-end
-
-function Base.isapprox(a::LabeledTensor, b::LabeledTensor; kwargs...)
-    isapprox(a.array, b.array; kwargs...) && a.labels == b.labels
-end
-Base.size(t::LabeledTensor) = Base.size(t.array)
-
-struct TensorNetwork{T,LT}
-    tensors::Vector{LabeledTensor{T,N,AT,LT} where {N, AT}}
+struct TensorNetwork{T,TT<:AbstractTensor{T}}
+    tensors::Vector{TT}
 end
 
 function TensorNetwork(tensors)
     T = promote_type([eltype(x.array) for x in tensors]...)
-    LT = promote_type([eltype(x.labels) for x in tensors]...)
-    TensorNetwork((LabeledTensor{T,N,AT,LT} where {N,AT})[tensors...])
+    TensorNetwork(AbstractTensor{T}[tensors...])
 end
 
 Base.copy(tn::TensorNetwork) = TensorNetwork(copy(tn.tensors))
@@ -118,7 +93,7 @@ function contract_tree(tn::TensorNetwork{T}, ctree; normalizer) where T
         t = tn.tensors[ctree]
         if normalizer !== nothing
             normt = normalizer(t)
-            return normt, LabeledTensor(rmul!(copy(t.array), T(1/normt)), t.labels)
+            return normt, rmul!(copy(t), T(1/normt))
         else
             return one(T), t
         end
@@ -130,19 +105,21 @@ function contract_tree(tn::TensorNetwork{T}, ctree; normalizer) where T
         if normalizer !== nothing
             normt_ = normalizer(t)
             normt = normt * normt_
-            rmul!(t.array, T(1/normt_))
+            rmul!(t, T(1/normt_))
         end
         return normt, t
     end
 end
 
-function contract(tn::TensorNetwork, ctree; normalizer=nothing)
+function contract(tn::TensorNetwork{T}, ctree; normalizer=nothing) where T
     normt, t = contract_tree(tn, ctree; normalizer=normalizer)
-    t.array .*= normt
+    if normt != one(T)
+        rmul!(t.array, normt)
+    end
     return t
 end
 
-function contract_label!(tn::TensorNetwork{T, LT}, label::LT) where {T, LT}
+function contract_label!(tn::TensorNetwork{T}, label) where {T}
     ts = findall(x->label ∈ x.labels, tn.tensors)
     @assert length(ts) == 2 "number of tensors with the same label $label is not 2, find $ts"
     t1, t2 = tn.tensors[ts[1]], tn.tensors[ts[2]]
@@ -182,22 +159,6 @@ end
 function Base.show(io::IO, ::MIME"plain/text", tn::TensorNetwork)
     Base.show(io, tn)
 end
-
-function Base.show(io::IO, lt::LabeledTensor)
-    print(io, "$(typeof(lt).name){$(eltype(lt.array))}($(join(lt.labels, ", ")))")
-end
-
-function Base.show(io::IO, ::MIME"plain/text", lt::LabeledTensor)
-    Base.show(io, lt)
-end
-
-struct PlotMeta
-    loc::Tuple{Float64, Float64}
-    name::String
-end
-merge_meta(m1::PlotMeta, m2::PlotMeta) = PlotMeta((m1.loc .+ m2.loc) ./ 2, m1.name*m2.name)
-merge_meta(m1::Nothing, m2::Nothing) = nothing
-dispmeta(m::PlotMeta) = m.name
 
 function adjacency_matrix(tn::TensorNetwork)
     indx = Int[]

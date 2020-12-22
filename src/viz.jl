@@ -15,7 +15,7 @@ function viz_tnet(tnet::TensorNetwork; r=0.25/sqrt(length(tnet.tensors)+1), show
     eb = bondstyle(:default, linewidth(4mm/sqrt(length(tnet.tensors)+1)), stroke("skyblue"))
     tb1 = textstyle(:default, fontsize(node_fontsize))
     tb2 = textstyle(:default, fontsize(edge_fontsize))
-    compose(context(r, r, 1-2r, 1-2r), canvas() do
+    compose(Compose.context(r, r, 1-2r, 1-2r), canvas() do
         for (t, loc, label) in zip(tnet.tensors, locs, labels)
             nb >> loc
             if !isempty(label)

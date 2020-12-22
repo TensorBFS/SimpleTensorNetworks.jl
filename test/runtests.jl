@@ -5,6 +5,10 @@ using Test
     include("tensorcontract.jl")
 end
 
+@testset "simplify" begin
+    include("simplify.jl")
+end
+
 @testset "viz" begin
     include("viz.jl")
 end
