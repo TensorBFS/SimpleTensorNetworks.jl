@@ -43,8 +43,6 @@ function rm_multiedge(t1, t2)
     return similar(t1, ti, li), similar(t2, tj, lj)
 end
 
-Base.similar(::Type{<:LabeledTensor}, arr::AbstractArray, labels::AbstractVector, meta=nothing) = LabeledTensor(arr, labels, meta)
-
 function tn2graph(tn::TensorNetwork)
     n = length(tn.tensors)
     g = SimpleGraph(n)
