@@ -130,6 +130,7 @@ function contract_label!(tn::TensorNetwork{T}, label) where {T}
 end
 
 using Base.Cartesian
+c2l(size::NTuple{0, Int}, c::NTuple{0,Int}) = 1
 @generated function c2l(size::NTuple{N, Int}, c::NTuple{N,Int}) where N
     quote
         res = c[1]
@@ -142,6 +143,7 @@ using Base.Cartesian
     end
 end
 
+l2c(size::NTuple{0, Int}, l::Int) = ()
 @generated function l2c(size::NTuple{N, Int}, l::Int) where N
     quote
         l -= 1
