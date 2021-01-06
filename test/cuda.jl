@@ -18,6 +18,8 @@ CUDA.allowscalar(false)
         i = rand(1:prod(shape))
         @test l2c(shape, i) == ci[i].I
     end
+    @test l2c((), 1) == ()
+    @test c2l((), ()) == 1
 end
 
 @testset "permutedims" begin
