@@ -27,6 +27,7 @@ end
 Base.size(t::LabeledTensor) = Base.size(t.array)
 Base.copy(t::LabeledTensor) = LabeledTensor(copy(t.array), t.labels)
 Base.similar(::Type{<:LabeledTensor}, arr::AbstractArray, labels::AbstractVector, meta=nothing) = LabeledTensor(arr, labels, meta)
+Base.similar(::LabeledTensor, arr::AbstractArray, labels::AbstractVector, meta=nothing) = LabeledTensor(arr, labels, meta)
 LinearAlgebra.rmul!(t::LabeledTensor, factor) = (rmul!(t.array, factor); t)
 
 function Base.show(io::IO, lt::LabeledTensor)
