@@ -1,7 +1,7 @@
 name = "SimpleTensorNetworks"
 uuid = "4456351a-5be3-4067-ade9-541926a41e04"
 authors = ["GiggleLiu <cacate0129@gmail.com> and contributors"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
