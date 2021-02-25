@@ -40,3 +40,15 @@ end
     @test tnet.tensors[] ≈ tOut2
     @test contracted_labels == [1, 2]
 end
+
+@testset "mul_dim" begin
+    A = zeros(Float64, 10, 32, 21);
+    B = zeros(Float64, 32, 11);
+    tA = LabeledTensor(A, [1,2,3])
+    tB = LabeledTensor(B, [2,4])
+    tA1 = SimpleTensorNetworks.mul_dim(tA, B; dim=2)
+    tA2 = tA * tB
+    @test tA1.array ≈ permutedims(tA2.array, (1,3,2))
+    @test tA1.labels == [1, 2, 3]
+    @test tA2.labels == [1, 3, 4]
+end

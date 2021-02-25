@@ -43,7 +43,7 @@ function mul_dim(t::LabeledTensor, m::AbstractMatrix; dim::Int)
     iA = ntuple(i->i, ndims(data))
     iB = (dim, -dim)
     iC = ntuple(i->i==dim ? -dim : i, ndims(data))
-    LabeledTensor(tensorcontract(iA, data, iB, m, iC; compress=false), t.labels)
+    LabeledTensor(tensorcontract(iA, data, iB, m, iC), t.labels)
 end
 
 struct PlotMeta
