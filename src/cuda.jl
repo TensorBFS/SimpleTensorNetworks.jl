@@ -17,6 +17,9 @@ function genperm(I::NTuple{N}, perm::NTuple{N}) where N
 end
 
 function LinearAlgebra.permutedims!(dest::GPUArrays.AbstractGPUArray, src::GPUArrays.AbstractGPUArray, perm)
+    LinearAlgebra.permutedims!(dest::GPUArrays.AbstractGPUArray, src::GPUArrays.AbstractGPUArray, Tuple(perm))
+end
+function LinearAlgebra.permutedims!(dest::GPUArrays.AbstractGPUArray, src::GPUArrays.AbstractGPUArray, perm::NTuple)
     perm isa Tuple || (perm = Tuple(perm))
     size_dest = size(dest)
     size_src = size(src)
