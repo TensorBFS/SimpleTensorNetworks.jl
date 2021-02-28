@@ -23,6 +23,5 @@ end
         tc, sc = abstract_contract(SimpleTensorNetworks.layout(tn), order)
         tc2, sc2 = abstract_contract(tn, trees)
         @test sort(tc) ≈ sort(tc2)
-        @test sort(sc) ≈ sort(sc2)
     end
 end
