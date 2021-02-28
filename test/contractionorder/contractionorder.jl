@@ -24,4 +24,9 @@ end
         tc2, sc2 = abstract_contract(tn, trees)
         @test sort(tc) ≈ sort(tc2)
     end
+
+    @testset "log2sumexp2" begin
+        x = randn(10)
+        @test log2(sum(exp2.(x))) ≈ log2sumexp2(x)
+    end
 end

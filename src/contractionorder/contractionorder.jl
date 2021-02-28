@@ -21,10 +21,10 @@ module ContractionOrder
 end
 
 using .ContractionOrder: order_greedy, TensorNetworkLayout
-import .ContractionOrder: abstract_contract
+import .ContractionOrder: abstract_contract, log2sumexp2
 using LightGraphs: SimpleEdge, src, dst
 
-export trees_greedy, abstract_contract
+export trees_greedy, abstract_contract, log2sumexp2
 
 function build_trees(N::Int, order::AbstractVector)
     ids = collect(Any, 1:N)
