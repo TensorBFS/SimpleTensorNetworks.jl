@@ -31,7 +31,7 @@ Base.similar(::LabeledTensor, arr::AbstractArray, labels::AbstractVector, meta=n
 LinearAlgebra.rmul!(t::LabeledTensor, factor) = (rmul!(t.array, factor); t)
 
 function Base.show(io::IO, lt::LabeledTensor)
-    print(io, "$(typeof(lt).name){$(eltype(lt.array))}($(join(lt.labels, ", ")))")
+    print(io, "$(typeof(lt).name.name){$(eltype(lt.array))}($(join(lt.labels, ", ")))")
 end
 
 function Base.show(io::IO, ::MIME"plain/text", lt::LabeledTensor)

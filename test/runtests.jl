@@ -9,6 +9,10 @@ end
     include("simplify.jl")
 end
 
+@testset "contractionorder" begin
+    include("contractionorder/contractionorder.jl")
+end
+
 @testset "viz" begin
     include("viz.jl")
 end
