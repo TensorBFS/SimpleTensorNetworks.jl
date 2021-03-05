@@ -9,10 +9,13 @@ function viz_tnet(tnet::TensorNetwork; r=0.25/sqrt(length(tnet.tensors)+1), show
         edge_fontsize=200pt/sqrt(length(tnet.tensors)+1),
         labels=1:length(tnet),
         locs=spring_layout(tnet),
+        linecolor="skyblue",
+        node_edgecolor="black",
+        node_facecolor="white"
     )
     nt = length(tnet.tensors)
-    nb = nodestyle(:default, fill("white"), stroke("black"), linewidth(2mm/sqrt(length(tnet.tensors)+1)); r=r)
-    eb = bondstyle(:default, linewidth(4mm/sqrt(length(tnet.tensors)+1)), stroke("skyblue"))
+    nb = nodestyle(:default, fill(node_facecolor), stroke(node_edgecolor), linewidth(2mm/sqrt(length(tnet.tensors)+1)); r=r)
+    eb = bondstyle(:default, linewidth(4mm/sqrt(length(tnet.tensors)+1)), stroke(linecolor))
     tb1 = textstyle(:default, fontsize(node_fontsize))
     tb2 = textstyle(:default, fontsize(edge_fontsize))
     compose(Compose.context(r, r, 1-2r, 1-2r), canvas() do

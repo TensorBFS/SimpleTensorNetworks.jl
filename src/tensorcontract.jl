@@ -64,6 +64,12 @@ function _conditioned_permutedims(A::AbstractArray{T,N}, perm) where {T,N}
     end
 end
 
+"""
+    TensorNetwork{T,TT<:AbstractTensor{T}}
+    TensorNetworks(tensors)
+
+A tensor network, its only field is `tensors` - a vector of `AbstractTensor` (e.g. `LabeledTensor`).
+"""
 struct TensorNetwork{T,TT<:AbstractTensor{T}}
     tensors::Vector{TT}
 end

@@ -3,6 +3,15 @@ export LabeledTensor
 # abstractions
 abstract type AbstractTensor{T, N} end
 
+"""
+    LabeledTensor{T,N,AT<:AbstractArray{T,N}, LT, MT} <: AbstractTensor{T, N}
+    LabeledTensor(array::AbstractArray, labels::AbstractVector[, meta])
+
+Tensor with labeled legs.
+When multiplying two tensors, legs with same labels will be treated as inner degree of freedom and get contracted.
+
+The optional argument `meta` is the meta information, default is `nothing`. One can use it to store additional information like plotting layout.
+"""
 struct LabeledTensor{T,N,AT<:AbstractArray{T,N}, LT, MT} <: AbstractTensor{T, N}
     array::AT
     labels::Vector{LT}
