@@ -45,15 +45,19 @@ function Base.show(io::IO, mime::MIME"text/html", tnet::TensorNetwork)
 end
 
 # copied from LightGraphs
-function spring_layout(tn::TensorNetwork,
-                       locs_x=2*rand(length(tn)).-1.0,
-                       locs_y=2*rand(length(tn)).-1.0;
+function spring_layout(tn::TensorNetwork, args...; kwargs...)
+    adj_matrix = adjacency_matrix(tn)
+    spring_layout(adj_matrix, args...; kwargs...)
+end
+
+function spring_layout(adj_matrix::AbstractMatrix,
+                       locs_x=2*rand(size(adj_matrix, 1)).-1.0,
+                       locs_y=2*rand(size(adj_matrix, 1)).-1.0;
                        C=2.0,
                        MAXITER=100,
                        INITTEMP=2.0)
 
-    nvg = length(tn)
-    adj_matrix = adjacency_matrix(tn)
+    nvg = size(adj_matrix, 1)
 
     # The optimal distance bewteen vertices
     k = C * sqrt(4.0 / nvg)
